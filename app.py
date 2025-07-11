@@ -153,7 +153,7 @@ if st.button("Start Sorting"):
         })
 
         chart = alt.Chart(df).mark_bar().encode(
-            x=alt.X('index:O', axis=None, title=None),
+            x=alt.X('index:O', title='Index', axis=alt.Axis(labelAngle=0)),
             y=alt.Y('value:Q', title=None),
             color=alt.Color('color:N', scale=None),  # Use exact color names
             tooltip=['index', 'value']
