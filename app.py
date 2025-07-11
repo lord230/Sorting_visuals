@@ -5,7 +5,7 @@ import time
 import random
 
 st.set_page_config(page_title="Sorting Visualizer", layout="wide")
-st.title("📊 Sorting Algorithm Visualizer")
+st.title("Sorting Algorithm Visualizer")
 st.markdown("Visualize how different sorting algorithms work with smooth animations and dynamic coloring.")
 
 # Sidebar
@@ -14,7 +14,6 @@ algo = st.sidebar.selectbox("Choose Sorting Algorithm",
 num_elements = st.sidebar.slider("Number of Elements", 5, 90, 15)
 speed = st.sidebar.slider("Animation Speed (lower is faster)", 0.001, 0.3, 0.05, step=0.01)
 
-# -------- Sorting Algorithms with Color Tracking --------
 
 def bubble_sort(data):
     frames = []
@@ -127,7 +126,9 @@ def merge_sort(data):
     merge_sort_recursive(arr, 0, len(arr) - 1)
     return frames
 
-# ---------- Run Sorting ----------
+
+
+
 if st.button("Start Sorting"):
     data = random.sample(range(10, 100), num_elements)
 
