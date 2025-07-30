@@ -222,47 +222,70 @@ if st.button("Start Sorting"):
     elif algo == "Sleep Sort":
         frames = sleep_sort(data)
 
-    # Typing state
     desc_lines = DESCRIPTIONS[algo]
     line_idx = 0
-    line_buffer = ""
+    char_idx = 0
+    typed_lines = []
+    typed_line = ""
+    typing_delay = 0.03  
+    last_type_time = time.time()
 
+    # --- Streamlit containers ---
+    chart_container = st.empty()
+    desc_container = st.empty()
+
+    # --- Sorting setup ---
+    frame_idx = 0
     max_frames = len(frames)
-    for frame_idx, (frame, idx1, idx2) in enumerate(frames):
-        # Draw chart
-        df = pd.DataFrame({
-            'index': list(range(len(frame))),
-            'value': frame,
-            'color': ['red' if i == idx1 or i == idx2 else 'steelblue' for i in range(len(frame))]
-        })
-        chart = alt.Chart(df).mark_bar().encode(
-            x=alt.X('index:O', title='Index'),
-            y=alt.Y('value:Q'),
-            color=alt.Color('color:N', scale=None),
-            tooltip=['index', 'value']
-        ).properties(height=400)
-        chart_container.altair_chart(chart, use_container_width=True)
 
-        # Animate typing one char per frame (fast)
+    # --- Animation Loop ---
+    while frame_idx < max_frames or line_idx < len(desc_lines):
+
+        # ---- Render sorting frame ----
+        if frame_idx < max_frames:
+            frame, idx1, idx2 = frames[frame_idx]
+            df = pd.DataFrame({
+                'index': list(range(len(frame))),
+                'value': frame,
+                'color': ['red' if i == idx1 or i == idx2 else 'steelblue' for i in range(len(frame))]
+            })
+
+            chart = alt.Chart(df).mark_bar().encode(
+                x=alt.X('index:O', title='Index'),
+                y=alt.Y('value:Q'),
+                color=alt.Color('color:N', scale=None),
+                tooltip=['index', 'value']
+            ).properties(height=400)
+
+            chart_container.altair_chart(chart, use_container_width=True)
+            frame_idx += 1
+            time.sleep(speed)  # user-controlled sorting speed
+
         if line_idx < len(desc_lines):
-            line = desc_lines[line_idx]
-            if len(line_buffer) < len(line):
-                line_buffer += line[len(line_buffer)]
-            if len(line_buffer) == len(line):
-                line_idx += 1
-                line_buffer = ""
+            now = time.time()
+            if now - last_type_time >= typing_delay:
+                line = desc_lines[line_idx]
 
-            # Update description area
-            desc_output = ""
-            for i in range(len(desc_lines)):
-                if i < line_idx:
-                    desc_output += f"- {desc_lines[i]}<br>"
-                elif i == line_idx:
-                    desc_output += f"- {line_buffer}▌<br>"
-            desc_container.markdown("**Description:**<br>" + desc_output, unsafe_allow_html=True)
+                if char_idx <= len(line):
+                    typed_line = line[:char_idx] + "▌"
+                    char_idx += 1
 
-        # time.sleep(speed)  # Adjust speed for visual effect
+                if char_idx > len(line):
+                    typed_lines.append(line)
+                    line_idx += 1
+                    char_idx = 0
+                    typed_line = ""
 
-    # Final description flush
+                # Render the description
+                full_description = ""
+                for i in range(len(desc_lines)):
+                    if i < len(typed_lines):
+                        full_description += f"- {typed_lines[i]}<br>"
+                    elif i == line_idx:
+                        full_description += f"- {typed_line}<br>"
+
+                desc_container.markdown("**Description:**<br>" + full_description, unsafe_allow_html=True)
+                last_type_time = now
+
     desc_container.markdown("**Description:**<br>" + "<br>".join(f"- {line}" for line in desc_lines), unsafe_allow_html=True)
     time.sleep(1.2)
